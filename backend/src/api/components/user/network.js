@@ -1,5 +1,6 @@
 const  { Router } = require('express')
 const User = require('../../../models/User')
+const controller = require('./index')
 const router = Router()
 
 //Routes
@@ -9,14 +10,12 @@ router.get('/:id', get)
 // router.put('/:id', update)
 // router.delete('/:id', remove)
 
-async function getAll(req, res, next) {
-    try {
-        const users = await User.find();
-        res.json(users)
-    } catch (error) {
-        console.log(error)
-    }
-
+function getAll(req, res, next) {
+    controller.getAll()
+    //   .then( lista => {
+    //       res.status(200).send('asdasd')
+    //   })
+    //   .catch(next)
 }
 
 function get(req, res, next) {
