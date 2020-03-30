@@ -1,107 +1,87 @@
-// const mongoose = require('mongoose')
 const { MongoClient, ObjectId } = require('mongodb')
-const { config } = require('../config')
-// const URI = 'mongodb://localhost/mernstack'
-const MONGO_USER = config.mongo.user
-const MONGO_PASSWORD = config.mongo.password
-const MONGO_PORT = config.api.port
-const MONGO_DATABASE = config.mongo.database
+const { config } = require('../config/index')
 
-const MONGO_URI = `mongodb+srv://${MONGO_USER}:${MONGO_PASSWORD}@${config.mongo.host}:${MONGO_PORT}/${MONGO_DATABASE}?retryWrites=true&w=majority`
+const USER = config.mongo.user
+const PASSWORD = config.mongo.password
+const DB_NAME = config.mongo.database
 
-// let mycon = new MongoClient(MONGO_URI, {
-//     useUnifiedTopology: true,
-//     useNewUrlParser: true,
-    
-// })
-// let con = mongoose.connect(MONGO_URI, {
-//     useNewUrlParser: true,
-//     useUnifiedTopology: true,
-//     useCreateIndex:true
-// })
+const MONGO_URI = `mondodb+srv://${USER}:${PASSWORD}@${config.mongo.host}:${config.api.port}/${DB_NAME}?retryWrites=true&w=majority`
+// const MONGO_URI = `mondodb+srv://leonardo_movies:a3b8pn0o0pd0l4pa1@$cluster0-yfxun.mongodb.net/db_movies_name?retryWrites=true&w=majority`
 
-// class MongoL {
-//     constructor() {
-//         this.client = new MongoClient(MONGO_URI,{
-//             useNewUrlParser: true,
-//             useUnifiedTopology: true
-//         })
-//         this.mongoDatabase = MONGO_DATABASE
-//     }
-
-//     connect() {
-//         if(MongoL.connection){
-//             MongoL.connection = new Promise((resolve, reject) => {
-//                 this.client.connect(error => {
-//                     if(error) {
-//                         reject(error)
-//                     } 
-//                     console.log('Mongo connectado')
-//                     resolve(this.client.db(this.mongoDatabase)) 
-//                 })
-//             })
-//         }
-//         return MongoL.connection
-//     }
-
-//     getAll(colllection, query) {
-//         return this.connect().then(db => {
-//             return db.colllection(colllection).find(query).toArray()
-//         })
-//     }
-//     get(colllection, id) {
-//         return this.connect().then(db => {
-//             return db.colllection(colllection).findOne( {_id: ObjectId(id)} )
-//         })
-//     }
-function mongoLibreria() {
-    
-        let client = new MongoClient(MONGO_URI, {
-            useNewUrlParser: true,
-            useUnifiedTopology: true
-        })
-        let dbname = MONGO_DATABASE
-    
-    connect(client, dbname)
-}
-
-function connect(client, dbname) {
-    if(!mongoLibreria.connection) {
-        mongoLibreria.connection = new Promise((resolve, reject) => {
-            client().connect(err => {
-                if(err){
-                    reject(err)
-                }
-                console.log('DB Conectada')
-                resolve(client.db(dbname))
-            })
-        })
+class MongoLibreria {
+  constructor() {
+    this.client = new MongoClient(MONGO_URI, {
+      useNewUrlParser: true,
+      useUnifiedTopology: true,
+    })
+    this.dbName = DB_NAME
+  }
+  //singleton no se cree nuevo cliente si ya existe una conexio
+  connect() {
+    if (!MongoLibreria.connection) {
+      MongoLibreria.connection = new Promise(
+        (resolve, reject) => {
+          this.client.connect(err => {
+            if (err) {
+              reject(err)
+            }
+            resolve(this.client.db(this.dbName))
+            console.log('Connected To Mongo')
+          })
+        },
+      )
     }
+    return MongoLibreria.connection
+  }
+
+  getAll(collection, query) {
+    return this.connect().then(db => {
+      return db
+        .collection(collection)
+        .find(query)
+        .toArray()
+    })
+  }
+
+  get(collection, id) {
+    return this.connect().then(db => {
+      return db
+        .collection(collection)
+        .findOne({ _id: ObjectId(id) })
+    })
+  }
+
+  create(collection, data) {
+    return this.connect()
+      .then(db => {
+        return db.collection(collection).insertOne(data)
+      })
+      .then(result => result.insertedId)
+  }
+
+  update(collection, id, data) {
+    return this.connect()
+      .then(db => {
+        return db
+          .collection(collection)
+          .updateOne(
+            { _id: ObjectId(id) },
+            { $set: data },
+            { upsert: true },
+          )
+      })
+      .then(result => result.upsertedId || id)
+  }
+
+  delete(collection, id) {
+    return this.connect()
+      .then(db => {
+        return db
+          .collection(collection)
+          .deleteOne({ _id: ObjectId(id) })
+      })
+      .then(() => id)
+  }
 }
 
-    // function getAll(colllection, query) {
-    //     return connect().then(db => {
-    //         return db.colllection(colllection).find(query).toArray()
-    //     })
-    // }
-
-    //CRUD
-//     Create
-// insertOne
-// Read
-// find
-// findOne
-// Update
-// updateOne
-// Delete
-// deleteOne
-
-
-
-
-
-
-module.exports = {
-    mongoLibreria,
-    // getAll
-}
+module.exports = MongoLibreria

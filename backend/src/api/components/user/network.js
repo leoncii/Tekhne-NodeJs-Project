@@ -1,11 +1,11 @@
-const  { Router } = require('express')
-const User = require('../../../models/User')
-const controller = require('./index')
-const router = Router()
+// const  { Router } = require('express')
+// const User = require('../../../models/User')
+// const controller = require('./index')
+// const router = Router()
 
 //Routes
-router.get('', getAll)
-router.get('/:id', get)
+// router.get('', getAll)
+// router.get('/:id', get)
 // router.post('/', upsert)
 // router.put('/:id', update)
 // router.delete('/:id', remove)
@@ -21,4 +21,4 @@ function getAll(req, res, next) {
 function get(req, res, next) {
     res.json({message: 'Elemento mostrado'})
 }
-module.exports = router
+// module.exports = router

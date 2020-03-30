@@ -1,5 +1,5 @@
 
-
+//controlladores llaman servicios
 const COLLECTION = 'users'
 
 module.exports = function(injectedstore) {
